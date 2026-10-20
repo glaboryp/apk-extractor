@@ -70,4 +70,14 @@ class AppListViewModelTest {
         vm.setQuery("example.notes")
         assertEquals(listOf("Notes"), vm.state.value.apps.map { it.label })
     }
+
+    @Test
+    fun `active extraction is kept until cleared`() {
+        val vm = viewModel()
+        vm.setActiveExtraction("work-1")
+        vm.setQuery("notes")
+        assertEquals("work-1", vm.activeExtraction.value)
+        vm.setActiveExtraction(null)
+        assertEquals(null, vm.activeExtraction.value)
+    }
 }

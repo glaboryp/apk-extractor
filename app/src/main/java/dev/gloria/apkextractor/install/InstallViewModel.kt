@@ -5,7 +5,9 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -29,11 +31,13 @@ class InstallViewModel(
     private val _state = MutableStateFlow<InstallState>(InstallState.Idle)
     val state: StateFlow<InstallState> = _state
 
+    private var installJob: Job? = null
+
     fun onFilePicked(uri: Uri) {
         _state.value = InstallState.Reading
         viewModelScope.launch {
-            val name = displayName(uri)
             _state.value = try {
+                val name = withContext(Dispatchers.IO) { displayName(uri) }
                 val contents = withContext(Dispatchers.IO) {
                     readBundle({ resolver.openInputStream(uri) ?: throw IOException("No se puede abrir el archivo") }, name)
                 }
@@ -41,7 +45,9 @@ class InstallViewModel(
                     is BundleContents.Apks -> InstallState.Ready(name, contents)
                     is BundleContents.Invalid -> InstallState.Invalid(contents.reason)
                 }
-            } catch (e: IOException) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
                 InstallState.Invalid(e.message ?: "No se puede leer el archivo")
             }
         }
@@ -50,9 +56,14 @@ class InstallViewModel(
     fun install() {
         val ready = _state.value as? InstallState.Ready ?: return
         _state.value = InstallState.Installing
-        viewModelScope.launch {
+        installJob = viewModelScope.launch {
             _state.value = InstallState.Done(installer.install(ready.contents.entries))
         }
+    }
+
+    fun cancelInstall() {
+        installJob?.cancel()
+        _state.value = InstallState.Idle
     }
 
     fun reset() {

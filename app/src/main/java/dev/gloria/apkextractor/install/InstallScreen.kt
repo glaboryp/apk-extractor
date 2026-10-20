@@ -60,7 +60,11 @@ fun InstallScreen(viewModel: InstallViewModel, modifier: Modifier = Modifier) {
                 Text(stringResource(R.string.install_intro), style = MaterialTheme.typography.bodyLarge)
                 Button(onClick = { picker.launch("*/*") }) { Text(stringResource(R.string.install_pick_file)) }
             }
-            InstallState.Reading, InstallState.Installing -> CircularProgressIndicator()
+            InstallState.Reading -> CircularProgressIndicator()
+            InstallState.Installing -> {
+                CircularProgressIndicator()
+                Button(onClick = viewModel::cancelInstall) { Text(stringResource(R.string.cancel)) }
+            }
             is InstallState.Ready -> {
                 val count = current.contents.entries.size
                 Text(current.fileName, style = MaterialTheme.typography.titleMedium)

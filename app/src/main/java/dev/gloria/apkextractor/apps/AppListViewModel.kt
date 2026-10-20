@@ -27,6 +27,8 @@ class AppListViewModel(
     private val allApps = MutableStateFlow<List<InstalledApp>?>(null)
     private val query = MutableStateFlow("")
     private val showSystem = MutableStateFlow(false)
+    private val _activeExtraction = MutableStateFlow<String?>(null)
+    val activeExtraction: StateFlow<String?> = _activeExtraction
 
     val state: StateFlow<AppListState> = combine(allApps, query, showSystem) { all, q, system ->
         AppListState(
@@ -48,6 +50,10 @@ class AppListViewModel(
 
     fun setQuery(q: String) {
         query.value = q
+    }
+
+    fun setActiveExtraction(workId: String?) {
+        _activeExtraction.value = workId
     }
 
     fun setShowSystem(on: Boolean) {

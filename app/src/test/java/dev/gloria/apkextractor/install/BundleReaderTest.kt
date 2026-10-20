@@ -88,4 +88,27 @@ class BundleReaderTest {
 
         assertTrue(result is BundleContents.Invalid)
     }
+
+    @Test
+    fun `non-utf8 entry name is Invalid`() {
+        val out = ByteArrayOutputStream()
+        ZipOutputStream(out, Charsets.ISO_8859_1).use { zip ->
+            zip.putNextEntry(ZipEntry("ñ.apk"))
+            zip.write(1)
+            zip.closeEntry()
+        }
+
+        val result = read(out.toByteArray(), "game.apks")
+
+        assertTrue(result is BundleContents.Invalid)
+    }
+
+    @Test
+    fun `apks only inside folders is Invalid with a hint about folders`() {
+        val bundle = zip("splits/base-master.apk" to byteArrayOf(1), "toc.pb" to byteArrayOf(2))
+
+        val result = read(bundle, "game.apks") as BundleContents.Invalid
+
+        assertTrue(result.reason.contains("carpetas"))
+    }
 }

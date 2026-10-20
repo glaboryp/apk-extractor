@@ -7,6 +7,7 @@ import android.content.pm.ServiceInfo
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import dev.gloria.apkextractor.R
@@ -72,6 +73,11 @@ class ExtractWorker(context: Context, params: WorkerParameters) : CoroutineWorke
             .setContentTitle(applicationContext.getString(R.string.extracting, label))
             .setProgress(100, if (total > 0) (done * 100 / total).toInt() else 0, total == 0L)
             .setOngoing(true)
+            .addAction(
+                android.R.drawable.ic_menu_close_clear_cancel,
+                applicationContext.getString(R.string.cancel),
+                WorkManager.getInstance(applicationContext).createCancelPendingIntent(id),
+            )
             .build()
         return ForegroundInfo(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
     }

@@ -5,11 +5,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import dev.gloria.apkextractor.extract.copyInterruptibly
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.IOException
+import kotlinx.coroutines.runInterruptible
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.coroutines.cancellation.CancellationException
 
 sealed interface InstallResult {
     data object Success : InstallResult
@@ -24,16 +25,17 @@ class ApkInstaller(private val context: Context) {
 
     suspend fun install(entries: List<ApkEntry>): InstallResult {
         val installer = context.packageManager.packageInstaller
-        val sessionId = installer.createSession(PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL))
-        val result = CompletableDeferred<InstallResult>()
-        pendingResults[sessionId] = result
+        var sessionId = -1
         try {
-            withContext(Dispatchers.IO) {
+            sessionId = installer.createSession(PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL))
+            val result = CompletableDeferred<InstallResult>()
+            pendingResults[sessionId] = result
+            runInterruptible(Dispatchers.IO) {
                 installer.openSession(sessionId).use { session ->
                     for (entry in entries) {
                         entry.open().use { input ->
                             session.openWrite(entry.name, 0, entry.size).use { out ->
-                                input.copyTo(out)
+                                copyInterruptibly(input, out)
                                 session.fsync(out)
                             }
                         }
@@ -42,15 +44,19 @@ class ApkInstaller(private val context: Context) {
                 }
             }
             return result.await()
-        } catch (e: IOException) {
-            runCatching { installer.abandonSession(sessionId) }
-            return InstallResult.Failure(e.message ?: "Error al instalar")
-        } catch (e: Throwable) {
-            runCatching { installer.abandonSession(sessionId) }
+        } catch (e: CancellationException) {
+            abandon(installer, sessionId)
             throw e
+        } catch (e: Exception) {
+            abandon(installer, sessionId)
+            return InstallResult.Failure(e.message ?: "Error al instalar")
         } finally {
             pendingResults.remove(sessionId)
         }
+    }
+
+    private fun abandon(installer: PackageInstaller, sessionId: Int) {
+        if (sessionId >= 0) runCatching { installer.abandonSession(sessionId) }
     }
 
     private fun statusIntentSender(sessionId: Int) = PendingIntent.getBroadcast(

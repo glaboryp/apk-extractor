@@ -29,6 +29,10 @@ private class ProgressCopier(
     }
 }
 
+internal fun copyInterruptibly(input: InputStream, out: OutputStream) {
+    ProgressCopier(-1) { _, _ -> }.copy(input, out)
+}
+
 fun copyFile(file: File, out: OutputStream, onProgress: (bytesWritten: Long, total: Long) -> Unit) {
     file.inputStream().use { ProgressCopier(file.length(), onProgress).copy(it, out) }
 }

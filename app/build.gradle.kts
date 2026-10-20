@@ -15,7 +15,7 @@ android {
 
     defaultConfig {
         applicationId = "dev.gloria.apkextractor"
-        minSdk = 31
+        minSdk = 33
         targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"

@@ -27,6 +27,7 @@ fun ExtractHost(workId: UUID, onDismiss: () -> Unit) {
     val workManager = WorkManager.getInstance(context)
     val info by workManager.getWorkInfoByIdFlow(workId).collectAsStateWithLifecycle(null)
     val current = info ?: return
+    val chooserTitle = stringResource(R.string.share_chooser)
 
     when (current.state) {
         WorkInfo.State.CANCELLED -> LaunchedEffect(workId) { onDismiss() }
@@ -43,7 +44,7 @@ fun ExtractHost(workId: UUID, onDismiss: () -> Unit) {
                             data.getString(ExtractWorker.KEY_URI)!!.toUri(),
                             data.getString(ExtractWorker.KEY_MIME) ?: BUNDLE_MIME,
                         )
-                        context.startActivity(Intent.createChooser(send, context.getString(R.string.share_chooser)))
+                        context.startActivity(Intent.createChooser(send, chooserTitle))
                     }) { Text(stringResource(R.string.share)) }
                 },
                 dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close)) } },

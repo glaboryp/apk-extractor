@@ -49,7 +49,7 @@ import java.util.UUID
 fun AppListScreen(viewModel: AppListViewModel, modifier: Modifier = Modifier) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var workId by rememberSaveable { mutableStateOf<String?>(null) }
+    val workId by viewModel.activeExtraction.collectAsStateWithLifecycle()
     var pendingPackage by rememberSaveable { mutableStateOf<String?>(null) }
 
     fun startExtraction(packageName: String) {
@@ -57,7 +57,7 @@ fun AppListScreen(viewModel: AppListViewModel, modifier: Modifier = Modifier) {
             .setInputData(workDataOf(ExtractWorker.KEY_PACKAGE to packageName))
             .build()
         WorkManager.getInstance(context).enqueue(request)
-        workId = request.id.toString()
+        viewModel.setActiveExtraction(request.id.toString())
     }
 
     val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
@@ -76,7 +76,7 @@ fun AppListScreen(viewModel: AppListViewModel, modifier: Modifier = Modifier) {
         }
     }
 
-    workId?.let { id -> ExtractHost(UUID.fromString(id), onDismiss = { workId = null }) }
+    workId?.let { id -> ExtractHost(UUID.fromString(id), onDismiss = { viewModel.setActiveExtraction(null) }) }
 
     Column(modifier.fillMaxSize().padding(horizontal = 16.dp)) {
         OutlinedTextField(
