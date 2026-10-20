@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">APK Extractor</string>
-    <string name="placeholder">APK Extractor</string>
+    <string name="search_apps">Buscar aplicación</string>
+    <string name="show_system_apps">Mostrar apps del sistema</string>
 </resources>
