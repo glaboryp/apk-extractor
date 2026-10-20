@@ -3,4 +3,13 @@
     <string name="app_name">APK Extractor</string>
     <string name="search_apps">Buscar aplicación</string>
     <string name="show_system_apps">Mostrar apps del sistema</string>
+    <string name="extract_channel">Extracción de APK</string>
+    <string name="extracting">Extrayendo %1$s</string>
+    <string name="extract">Extraer</string>
+    <string name="cancel">Cancelar</string>
+    <string name="close">Cerrar</string>
+    <string name="share">Compartir</string>
+    <string name="extract_done">Guardado en Descargas</string>
+    <string name="extract_failed">No se pudo extraer</string>
+    <string name="share_chooser">Compartir archivo</string>
 </resources>

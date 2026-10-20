@@ -10,13 +10,15 @@ interface AppRepository {
 class PackageManagerAppRepository(private val packageManager: PackageManager) : AppRepository {
 
     override fun loadApps(): List<InstalledApp> =
-        packageManager.getInstalledApplications(PackageManager.GET_META_DATA).map { info ->
+        packageManager.getInstalledPackages(PackageManager.PackageInfoFlags.of(0)).mapNotNull { pkg ->
+            val info = pkg.applicationInfo ?: return@mapNotNull null
             InstalledApp(
-                packageName = info.packageName,
+                packageName = pkg.packageName,
                 label = info.loadLabel(packageManager).toString(),
                 isSystem = info.flags and ApplicationInfo.FLAG_SYSTEM != 0,
                 sourceDir = info.sourceDir,
                 splitSourceDirs = info.splitSourceDirs?.toList().orEmpty(),
+                versionName = pkg.versionName,
             )
         }
 }

@@ -6,4 +6,5 @@ data class InstalledApp(
     val isSystem: Boolean,
     val sourceDir: String,
     val splitSourceDirs: List<String>,
+    val versionName: String? = null,
 )
