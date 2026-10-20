@@ -12,4 +12,18 @@
     <string name="extract_done">Guardado en Descargas</string>
     <string name="extract_failed">No se pudo extraer</string>
     <string name="share_chooser">Compartir archivo</string>
+    <string name="tab_apps">Apps</string>
+    <string name="tab_install">Instalar</string>
+    <string name="install_intro">Elige un archivo APK, APKS, XAPK o ZIP para instalarlo.</string>
+    <string name="install_pick_file">Elegir archivo</string>
+    <string name="install_action">Instalar</string>
+    <string name="install_obb_notice">Este paquete incluye datos OBB que no se instalarán.</string>
+    <string name="install_success">Instalación completada</string>
+    <string name="install_failed">No se pudo instalar: %1$s</string>
+    <string name="install_permission_needed">Para instalar apps, permite a APK Extractor instalar apps desconocidas.</string>
+    <string name="install_grant_permission">Abrir ajustes</string>
+    <plurals name="install_apk_count">
+        <item quantity="one">%1$d APK</item>
+        <item quantity="other">%1$d APKs</item>
+    </plurals>
 </resources>
