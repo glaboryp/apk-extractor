@@ -13,3 +13,4 @@
 *.keystore
 .superpowers/
 app/build/
+keystore.properties
