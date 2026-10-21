@@ -1,4 +1,4 @@
-# APK Extractor
+# apk-extractor
 
 Android app (Kotlin + Jetpack Compose) with no ads that:
 

@@ -12,5 +12,6 @@
 *.jks
 *.keystore
 .superpowers/
+.claude/
 app/build/
 keystore.properties

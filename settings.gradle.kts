@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "APK Extractor"
+rootProject.name = "apk-extractor"
 include(":app")
