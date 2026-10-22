@@ -3,12 +3,12 @@ package dev.gloria.apkextractor
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -46,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         if (savedInstanceState == null) handleViewIntent(intent)
         setContent {
             MaterialTheme {
@@ -70,7 +71,7 @@ class MainActivity : ComponentActivity() {
                             }
                         },
                     ) { padding ->
-                        Box(Modifier.safeDrawingPadding().padding(padding)) {
+                        Box(Modifier.padding(padding)) {
                             if (tab == 0) AppListScreen(appListViewModel) else InstallScreen(installViewModel)
                         }
                     }
