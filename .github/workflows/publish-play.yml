@@ -1,0 +1,119 @@
+name: Publish to Google Play
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: Google Play track
+        required: true
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+        default: alpha
+      release_notes:
+        description: Approved Spanish release notes (maximum 500 characters)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate inputs
+        env:
+          PLAY_TRACK: ${{ inputs.track }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          set -euo pipefail
+          case "$PLAY_TRACK" in
+            internal|alpha|beta|production) ;;
+            *)
+              echo "::error::Unsupported Google Play track"
+              exit 1
+              ;;
+          esac
+          case "$RELEASE_NOTES" in
+            *[!$' \t\r\n']*) ;;
+            *)
+              echo "::error::Release notes must not be empty"
+              exit 1
+              ;;
+          esac
+          if [ "${#RELEASE_NOTES}" -gt 500 ]; then
+            echo "::error::Release notes exceed Google Play's 500-character limit"
+            exit 1
+          fi
+
+      - name: Configure temporary signing files
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          for variable in ANDROID_KEYSTORE_BASE64 ANDROID_KEYSTORE_PASSWORD ANDROID_KEY_ALIAS ANDROID_KEY_PASSWORD; do
+            if [ -z "${!variable}" ]; then
+              echo "::error::Missing required repository secret: ${variable}"
+              exit 1
+            fi
+          done
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/apk-extractor-upload.jks"
+          {
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/apk-extractor-upload.jks"
+            printf 'storePassword=%s\n' "$ANDROID_KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$ANDROID_KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$ANDROID_KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build and validate release bundle
+        run: |
+          set -euo pipefail
+          chmod +x ./gradlew
+          ./gradlew test bundleRelease --no-daemon --stacktrace
+          test -s app/build/outputs/bundle/release/app-release.aab
+
+      - name: Write temporary Spanish release notes
+        env:
+          PLAY_TRACK: ${{ inputs.track }}
+          RELEASE_NOTES: ${{ inputs.release_notes }}
+        run: |
+          set -euo pipefail
+          notes_dir="app/src/main/play/release-notes/es-ES"
+          mkdir -p "$notes_dir"
+          printf '%s' "$RELEASE_NOTES" > "$notes_dir/${PLAY_TRACK}.txt"
+
+      - name: Publish approved bundle
+        env:
+          ANDROID_PUBLISHER_CREDENTIALS: ${{ secrets.ANDROID_PUBLISHER_CREDENTIALS }}
+          PLAY_TRACK: ${{ inputs.track }}
+        run: |
+          set -euo pipefail
+          if [ -z "$ANDROID_PUBLISHER_CREDENTIALS" ]; then
+            echo "::error::Missing required repository secret: ANDROID_PUBLISHER_CREDENTIALS"
+            exit 1
+          fi
+          ./gradlew publishReleaseBundle \
+            --no-daemon \
+            --stacktrace \
+            -PplayTrack="$PLAY_TRACK"
