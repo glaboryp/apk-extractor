@@ -51,3 +51,6 @@ The keystore and passwords must be configured in GitHub repository settings,
 never committed to the repository. An APK downloaded from GitHub Releases may
 not update an installation obtained from Google Play, or vice versa, when the
 signing keys differ.
+
+For the approved manual Google Play publication flow, see
+[`docs/release-process.md`](docs/release-process.md).
