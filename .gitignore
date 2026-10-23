@@ -13,6 +13,7 @@
 *.keystore
 .superpowers/
 .claude/
+docs/superpowers/plans/
 app/build/
 keystore.properties
 .worktrees/
