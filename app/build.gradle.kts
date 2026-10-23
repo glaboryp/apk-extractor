@@ -61,7 +61,7 @@ android {
 play {
     track.set(providers.gradleProperty("playTrack").orElse("alpha"))
     releaseStatus.set(ReleaseStatus.COMPLETED)
-    resolutionStrategy.set(ResolutionStrategy.IGNORE)
+    resolutionStrategy.set(ResolutionStrategy.FAIL)
     defaultToAppBundles.set(true)
 }
 
