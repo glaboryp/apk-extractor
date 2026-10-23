@@ -35,6 +35,11 @@ Push a version tag such as `v0.1.4` to start the **Release APK** workflow. It
 builds the signed release APK and attaches it to a GitHub Release as
 `APK Extractor-v0.1.4.apk`.
 
+Before tagging, update both `versionName` and `versionCode` in
+`app/build.gradle.kts`. The workflow requires the tag version to match
+`versionName` and rejects a `versionCode` that is not greater than the
+previous tagged release.
+
 The workflow requires these repository secrets:
 
 - `ANDROID_KEYSTORE_BASE64`: the base64-encoded release keystore;
