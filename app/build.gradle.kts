@@ -2,8 +2,12 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.play.publisher)
     alias(libs.plugins.kotlin.compose)
 }
+
+import com.github.triplet.gradle.androidpublisher.ReleaseStatus
+import com.github.triplet.gradle.androidpublisher.ResolutionStrategy
 
 val keystoreProperties = Properties().apply {
     rootProject.file("keystore.properties").takeIf { it.exists() }?.inputStream()?.use(::load)
@@ -52,6 +56,13 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+play {
+    track.set(providers.gradleProperty("playTrack").orElse("alpha"))
+    releaseStatus.set(ReleaseStatus.COMPLETED)
+    resolutionStrategy.set(ResolutionStrategy.FAIL)
+    defaultToAppBundles.set(true)
 }
 
 dependencies {
