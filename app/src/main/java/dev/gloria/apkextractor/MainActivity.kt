@@ -1,16 +1,16 @@
 package dev.gloria.apkextractor
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -48,10 +48,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-            navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
-        )
+        enableEdgeToEdge()
         if (savedInstanceState == null) handleViewIntent(intent)
         setContent {
             MaterialTheme {
@@ -59,6 +56,7 @@ class MainActivity : ComponentActivity() {
                 if (openedWithFile > 0) tab = 1
                 Surface(Modifier.fillMaxSize()) {
                     Scaffold(
+                        contentWindowInsets = WindowInsets.safeDrawing,
                         bottomBar = {
                             NavigationBar {
                                 NavigationBarItem(
